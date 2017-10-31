@@ -162,7 +162,7 @@ public:
 MultiGraph mst(vector<pair<Point, int>>& points) {
     Delaunay t;
     t.insert(points.begin(), points.end());
-
+    
     Filter is_finite((Delaunay0)t);
     Finite_triangulation ft((Delaunay0)t, is_finite, is_finite);
     
@@ -251,6 +251,20 @@ vector<Edge> better_match(vector<Edge> edges, const MultiGraph& g) {
     return result;
 }
 
+vector<Edge> cycleVtc2edges(vector<int> vtcs) {
+    vector<Edge> result;
+    if (vtcs.size() == 0) return result;
+    auto from = vtcs.begin();
+    auto to = ++from;
+    do {
+        result.push_back({*from, *to});
+        from++;
+        to++;
+    } while(to != vtcs.end());
+    return result;
+    
+}
+
 vector<Edge> euler_cycle(MultiGraph& g) {
     vector<Edge> acc;
     int curr = 0;
@@ -272,12 +286,20 @@ vector<Edge> euler_cycle(MultiGraph& g) {
     return acc;
 }
 
-vector<Edge> shortcuts(vector<Edge>& cycle) {
-    //TODO
-    return vector<Edge>();
+vector<int> shortcuts(vector<Edge>& cycle, int size) {
+    vector<int> result;
+    vector<bool> visited(size, false);
+    for (Edge e : cycle) {
+        if (!visited[e.from]) {
+            visited[e.from] = true;
+            result.push_back(e.from);
+        }
+    }
+
+    return result;
 }
 
-vector<Edge> tsp(vector<pair<Point, int>>& points) {
+vector<int> tsp(vector<pair<Point, int>>& points) {
     MultiGraph g1 = mst(points);
     dup_leaf_edges(g1);
     vector<pair<Point, int>> odd_points = odd_deg(g1);
@@ -286,11 +308,11 @@ vector<Edge> tsp(vector<pair<Point, int>>& points) {
         g1.add_edge_undir(e.from, e.to);
     }
     vector<Edge> euler = euler_cycle(g1);
-    return shortcuts(euler);
+    return shortcuts(euler, points.size());
 }
 
 
-int main1(int argc,char* argv[])
+int main(int argc,char* argv[])
 {
     
     Delaunay t;
@@ -311,9 +333,9 @@ int main1(int argc,char* argv[])
     std::list<edge_descriptor> mst;
     boost::graph_traits<Delaunay0>::vertex_descriptor d;
     boost::graph_traits<CGAL::Delaunay_triangulation_2<K, Tds>>::vertex_descriptor d1;
-//    boost::graph_traits<CGAL::Point_set_2<K, Tds>>::vertex_descriptor d2;
+    //    boost::graph_traits<CGAL::Point_set_2<K, Tds>>::vertex_descriptor d2;
     
-
+    
     
     
     
@@ -322,7 +344,7 @@ int main1(int argc,char* argv[])
     auto vrts = vertices(t);
     auto vrtx = *(vrts.begin());
     auto x = vrtx.operator*();
-   
+    
     std::cout <<"YOLO"<< std::endl;
     boost::kruskal_minimum_spanning_tree(ft,
                                          std::back_inserter(mst),
@@ -332,10 +354,10 @@ int main1(int argc,char* argv[])
         edge_descriptor ed = *it;
         vertex_descriptor svd = source(ed,t);
         vertex_descriptor tvd = target(ed,t);
-//        Triangulation::Vertex_handle sv = svd;
-//        Triangulation::Vertex_handle tv = tvd;
+        //        Triangulation::Vertex_handle sv = svd;
+        //        Triangulation::Vertex_handle tv = tvd;
     }
-
-
+    
+    
     return 0;
 }
